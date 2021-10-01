@@ -1,0 +1,48 @@
+#!/bin/bash
+
+if [ "$#" -ne 1 ]; then
+	echo "Too many or less params!"
+	exit 1
+fi
+TOGGLER="/sys/class/leds/tpacpi::thinklight/brightness"
+if ! test -f $TOGGLER; then
+	echo "Cannot detect thinklight."
+	echo "Probably check the connection in your motherboard."
+	exit 1
+fi
+if ! touch $TOGGLER &>/dev/null ; then
+	echo "Permission denied while trying to access ThinkLight file."
+	echo "Are you running as root?"
+	echo "Use \"sudo $0 $1\" to run again as root."
+	exit 1
+fi 
+MAXBRIGHT=$(cat "/sys/class/leds/tpacpi::thinklight/max_brightness")
+ONSTATE="255"
+OFFSTATE="0"
+
+case $1 in
+	"on" )
+		FINALSTATE=$ONSTATE
+		;;
+	"off" )
+		FINALSTATE=$OFFSTATE
+		;;
+	* )
+		if [[ "$1" =~ ^[0-9]+$ ]] && [ "$1" -ge 0 ] && [ "$1" -le 255 ]; then
+			FINALSTATE=$1
+		else
+			echo "Invalid Param, \"on\", \"off\" or int between 0 and 255!"
+			exit 1
+		fi
+		;;
+esac
+echo "Switching ThinkLight brighness to $FINALSTATE"
+echo $FINALSTATE > $TOGGLER
+if [ "$?" -eq 0 ]; then
+	echo "Success."
+	exit 0
+else
+	echo "Failed."
+	exit 1
+fi
+
