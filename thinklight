@@ -7,7 +7,7 @@ fi
 TOGGLER="/sys/class/leds/tpacpi::thinklight/brightness"
 if ! test -f $TOGGLER; then
 	echo "Cannot detect thinklight."
-	echo "Probably check the connection in your motherboard."
+	echo "This program only supports ThinkPad. If the ThinkLight is installed properly onto your ThinkPad, open an issue."
 	exit 1
 fi
 if ! touch $TOGGLER &>/dev/null ; then
@@ -17,7 +17,7 @@ if ! touch $TOGGLER &>/dev/null ; then
 	exit 1
 fi 
 MAXBRIGHT=$(cat "/sys/class/leds/tpacpi::thinklight/max_brightness")
-ONSTATE="255"
+ONSTATE=$MAXBRIGHT
 OFFSTATE="0"
 
 case $1 in
@@ -28,10 +28,10 @@ case $1 in
 		FINALSTATE=$OFFSTATE
 		;;
 	* )
-		if [[ "$1" =~ ^[0-9]+$ ]] && [ "$1" -ge 0 ] && [ "$1" -le 255 ]; then
+		if [[ "$1" =~ ^[0-9]+$ ]] && [ "$1" -ge 0 ] && [ "$1" -le "$MAXBRIGHT" ]; then
 			FINALSTATE=$1
 		else
-			echo "Invalid Param, \"on\", \"off\" or int between 0 and 255!"
+			echo "Invalid Param, \"on\", \"off\" or int between 0 and $MAXBRIGHT!"
 			exit 1
 		fi
 		;;
